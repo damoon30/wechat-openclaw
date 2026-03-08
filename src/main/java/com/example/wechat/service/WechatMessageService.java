@@ -11,12 +11,7 @@ import org.springframework.stereotype.Service;
  * 微信消息处理服务
  * 
  * 支持内部群聊和外部群聊的@自动回复
- * 
- * 外部群聊限制：
- * 1. 需要开通企业微信"会话内容存档"功能
- * 2. 消息接收有1-5分钟延迟
- * 3. 外部客户48小时内未互动，无法主动发送消息
- * 4. 机器人必须在群里才能发送消息
+ * 支持使用会话存档获取上下文
  */
 @Slf4j
 @Service
@@ -85,8 +80,15 @@ public class WechatMessageService {
             log.info("注意：外部群聊消息可能存在1-5分钟延迟，且需要开通会话内容存档");
         }
         
-        // 调用 OpenClaw 获取回复
-        String reply = openClawService.chat(userId, question);
+        // 调用 OpenClaw 获取回复（传入群聊ID和消息ID以获取上下文）
+        String reply;
+        if (message.getChatId() != null && message.getMsgId() != null) {
+            // 有群聊上下文，使用会话存档
+            reply = openClawService.chat(userId, question, message.getChatId(), message.getMsgId());
+        } else {
+            // 无群聊上下文，普通对话
+            reply = openClawService.chat(userId, question);
+        }
         
         // 发送回复到群聊
         if (message.getChatId() != null) {
@@ -96,12 +98,9 @@ public class WechatMessageService {
     
     /**
      * 判断是否为外部群聊
-     * 外部群聊ID通常以 wrc 开头（room chat）
      */
     private boolean isExternalChatId(String chatId) {
         if (chatId == null) return false;
-        // 外部群聊ID特征：通常包含外部联系人标识
-        // 这里可以根据实际情况调整判断逻辑
         return chatId.startsWith("wrc") || chatId.contains("external");
     }
     
