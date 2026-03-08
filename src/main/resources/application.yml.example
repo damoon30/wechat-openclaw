@@ -1,0 +1,23 @@
+# 示例配置文件
+# 复制此文件为 application.yml 并填入真实值
+
+server:
+  port: 8080
+
+wechat:
+  corp-id: "ww1234567890abcdef"
+  agent-id: 1000002
+  secret: "your_secret_here"
+  token: "your_token_here"
+  encoding-aes-key: "your_encoding_aes_key_here"
+  bot-user-id: "ZhangSan"
+
+openclaw:
+  gateway-url: "http://localhost:8081"
+  auth-token: ""
+  agent-id: "main"
+  session-timeout: 1800000
+
+logging:
+  level:
+    com.example.wechat: DEBUG
